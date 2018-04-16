@@ -9,9 +9,9 @@ find_package(OpenCV REQUIRED)
 #Since Eigen is just a collection of headers, it is possible to just
 # include it as it is
 include_directories(
-    include
-    libs_external/eigen-eigen-5a0156e40feb/Eigen
-    ${OpenCV_INCLUDE_DIRS})
+        include
+        libs_external/eigen-eigen-5a0156e40feb/Eigen
+        ${OpenCV_INCLUDE_DIRS})
 
 #The file() command is used to add the source files to the project.
 #GLOB (or GLOB_RECURSE) is used to create a list of all of the files
