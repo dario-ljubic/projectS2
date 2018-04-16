@@ -1,29 +1,83 @@
 #include <iostream>
 #include "EdgeDetection.h"
+#include "InputParser.h"
 
 #include "opencv2/imgproc.hpp"
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/highgui.hpp"
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
 
-    cv::Mat input_image_raw;
+    InputParser parser(argc, argv);
     std::string filename;
+    uint8_t camera_num;
+    cv::Mat input_image_raw;
 
-    if (argc != 2) {
-        std::cout << "Image path has not been given as an argument. Using default image..." << std::endl;
-        std::cout << "Usage: ./projectS2 [image_name --default ../data/Lenna.png]" << std::endl;
-        filename = "../data/image_0003.jpg";
-    }
-    else {
-        filename = argv[1];
+    if (argc < 2) {
+      std::cout << "Not enough input arguments! Add [-h] to see help. \n";
+      return EXIT_FAILURE;
     }
 
-    input_image_raw = cv::imread( filename, cv::IMREAD_COLOR );
+    if (parser.CmdOptionExists("-h")) {
+      std::cout << "Usage instructions: \n";
+      std::cout << "  -f : offline usage. You should provide a path to the image. If"
+          " the path is not provided, default image is used.\n";
+      std::cout << "  -l : live usage. You should choose which camera to use. In"
+          " contrary, build in camera is used.\n";
+      return EXIT_FAILURE;
+    }
+
+    if (parser.CmdOptionExists("-f")) {
+
+      filename = parser.GetCmdOption("-f");
+
+      if (filename.empty()){
+        filename = "../data/Lenna.jpg";
+      }
+
+      input_image_raw = cv::imread( filename, cv::IMREAD_COLOR );
+    }
+
+    if (parser.CmdOptionExists("-l")) {
+
+      filename = parser.GetCmdOption("-l");
+
+      if (filename.empty()){
+      filename = "0";
+      }
+
+      camera_num = std::stoi(filename);
+
+      cv::VideoCapture capture(camera_num);
+      if(!capture.isOpened()){
+        std::cout << "Space hit, taking an image... \n";
+        return EXIT_FAILURE;
+      }
+      
+      while(true)
+      {
+        cv::Mat frame;
+        capture >> frame; // get a new frame from camera
+        cv::imshow("Stream", frame);
+
+        int key_pressed = cv::waitKey(1);
+
+        if (key_pressed % 256 == 27) {
+          std::cout << "Escape hit, closing... \n";
+          break;
+        }
+
+        if (key_pressed % 256 == 32) {
+          std::cout << "Space hit, taking an image... \n";
+          input_image_raw = frame;
+          break;
+        }
+      }
+    }
 
     if(input_image_raw.empty()){
         std::cout << "Error opening image." << std::endl;
-        return 1;
+        return EXIT_FAILURE;
     }
 
     // TODO: Image preparation - to grayscale, to float
