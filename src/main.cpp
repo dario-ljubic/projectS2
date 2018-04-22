@@ -1,5 +1,6 @@
 #include <iostream>
 #include "EdgeDetection.h"
+#include "LineDetection.h"
 #include "InputParser.h"
 
 #include "opencv2/imgcodecs.hpp"
@@ -24,7 +25,7 @@ int main(int argc, char **argv) {
             " the path is not provided, default image is used.\n";
     std::cout << "  -l : live usage. You should choose which camera to use. In"
         " contrary, build in camera is used.\n";
-    return EXIT_FAILURE;
+    return EXIT_SUCCESS;
   }
 
   if (parser.CmdOptionExists("-f")) {
@@ -50,7 +51,7 @@ int main(int argc, char **argv) {
 
     cv::VideoCapture capture(camera_num);
     if (!capture.isOpened()) {
-      std::cout << "Space hit, taking an image... \n";
+      std::cout << "Not able to access the camera!\n";
       return EXIT_FAILURE;
     }
 
@@ -86,6 +87,7 @@ int main(int argc, char **argv) {
   cv::Mat input_image_gray;
   cv::cvtColor(input_image_raw, input_image_gray, CV_BGR2GRAY);
 
+  // Edge detection
   EdgeDetection test;
 
   cv::Mat edges;
@@ -94,6 +96,23 @@ int main(int argc, char **argv) {
   cv::namedWindow("Display window", cv::WINDOW_AUTOSIZE);
   cv::imshow("Display window", edges);
 
+  cv::waitKey(0);
+
+  // Line detection
+  /// Create Trackbars for Thresholds
+  LineDetection lines;
+  cv::Mat standard_hough, probabilistic_hough;
+
+  /// Initialize
+  lines.SetThreshold(70);
+
+  lines.StandardHough(edges, standard_hough);
+  cv::imshow("Standard Hough", standard_hough);
+  cv::waitKey(0);
+
+
+  lines.ProbabilisticHough(edges, probabilistic_hough);
+  cv::imshow("Probabilistic Hough", probabilistic_hough);
   cv::waitKey(0);
 
   return EXIT_SUCCESS;
