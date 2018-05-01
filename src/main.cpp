@@ -3,9 +3,6 @@
 #include "LineDetection.h"
 #include "InputParser.h"
 
-#include "opencv2/imgcodecs.hpp"
-#include "opencv2/highgui.hpp"
-
 int main(int argc, char **argv) {
 
   InputParser parser(argc, argv);
@@ -25,6 +22,8 @@ int main(int argc, char **argv) {
             " the path is not provided, default image is used.\n";
     std::cout << "  -l : live usage. You should choose which camera to use. In"
         " contrary, build in camera is used.\n";
+    std::cout << "  -t : testing mode. Trackbars will be present so that best"
+        " parameters can be chosen.\n";
     return EXIT_SUCCESS;
   }
 
@@ -99,21 +98,23 @@ int main(int argc, char **argv) {
   cv::waitKey(0);
 
   // Line detection
-  /// Create Trackbars for Thresholds
-  LineDetection lines;
-  cv::Mat standard_hough, probabilistic_hough;
+  if (parser.CmdOptionExists("-t")) {
 
-  /// Initialize
-  lines.SetThreshold(70);
+    LineDetection::RunHoughThresholdTesting(edges);
+  }
+  else {
+    LineDetection lines;
+    cv::Mat standard_hough, probabilistic_hough;
+    lines.SetThreshold(70);
 
-  lines.StandardHough(edges, standard_hough);
-  cv::imshow("Standard Hough", standard_hough);
-  cv::waitKey(0);
+    lines.StandardHough(edges, standard_hough);
+    cv::imshow("Standard Hough", standard_hough);
+    cv::waitKey(0);
 
-
-  lines.ProbabilisticHough(edges, probabilistic_hough);
-  cv::imshow("Probabilistic Hough", probabilistic_hough);
-  cv::waitKey(0);
+    lines.ProbabilisticHough(edges, probabilistic_hough);
+    cv::imshow("Probabilistic Hough", probabilistic_hough);
+    cv::waitKey(0);
+  }
 
   return EXIT_SUCCESS;
 }
