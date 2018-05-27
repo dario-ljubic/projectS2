@@ -46,7 +46,12 @@ int main(int argc, char **argv) {
       filename = "0";
     }
 
-    camera_num = std::stoi(filename);
+    try {
+      camera_num = std::stoi(filename);
+    }
+    catch (std::invalid_argument) {
+      filename = "0";
+    }
 
     cv::VideoCapture capture(camera_num);
     if (!capture.isOpened()) {
